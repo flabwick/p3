@@ -1,0 +1,39 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Stream {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  blocks    Block[]
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  streamId  String
+  type      BlockType
+  content   String   // JSON string for future extensibility
+  order     Int
+  inContext Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  stream    Stream   @relation(fields: [streamId], references: [id], onDelete: Cascade)
+
+  @@index([streamId, order])
+}
+
+enum BlockType {
+  markdown
+  prompt
+}
